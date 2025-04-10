@@ -17,8 +17,11 @@
 
 ## **About**
 
-A static vanilla JS obj viewer based on rhino3dm Web Assemblies 
-The app is simple obj loader of different Rhino Datatype and Open NURBS datatype
+A static vanilla JS obj viewer based on rhino3dm.js
+
+rhino3dm.js is a javascript library with an associated rhino3dm.wasm (web assembly) that is OpenNURBS plus additional C++ to javascript bindings compiled to web assembly. Web assembly is now an available technology on all major browsers as well as node.js.
+
+The app is work in progress 
 
 
 This is based on https://mcneel.github.io/rhino3dm/javascript/api/index.html 
