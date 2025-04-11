@@ -1,56 +1,111 @@
-// This script creates a 3D sphere using Rhino3dm and Three.js, and sets up a basic scene with lighting and controls. 
-// It also handles window resizing to maintain the aspect ratio of the camera. 
-
-// Import necessary libraries
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import rhino3dm from 'rhino3dm';
 
 // Initialize Rhino3dm
 const rhino = await rhino3dm();
+console.log('Rhino3dm loaded:', rhino);
 
-// Create sphere
-const sphere = new rhino.Sphere([0, 0, 0], 12);  // Centered at origin
-console.log('Sphere diameter:', sphere.diameter);
+// Scene setup
+let scene, camera, renderer, controls;
+const file = 'hello_mesh.3dm'; // Make sure this file exists in your server root
 
-// Three.js setup
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0xaaaaaa);
-document.body.appendChild(renderer.domElement);
+// Load and process 3DM file
+async function loadModel() {
+    try {
+        const res = await fetch(file);
+        const buffer = await res.arrayBuffer();
+        const arr = new Uint8Array(buffer);
+        const doc = rhino.File3dm.fromByteArray(arr);
+        
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0x2194ce,
+            specular: 0x111111,
+            shininess: 100
+        });
 
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(10, 10, 10);
-scene.add(directionalLight);
+        const objects = doc.objects();
+        for (let i = 0; i < objects.count; i++) {
+            const mesh = objects.get(i).geometry();
+            if (mesh instanceof rhino.Mesh) {
+                const threeMesh = meshToThreejs(mesh, material);
+                scene.add(threeMesh);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading model:', error);
+    }
+}
 
-// Convert Rhino sphere to Three.js mesh
-const geometry = new THREE.SphereGeometry(
-    sphere.radius, 
-    32, 
-    32
-);
-const material = new THREE.MeshPhongMaterial({ 
-    color: 0x00ff00,
-    wireframe: false,
-    shininess: 100
-});
-const sphereMesh = new THREE.Mesh(geometry, material);
-scene.add(sphereMesh);
+// Draw a sphere using Rhino and Three.js
+function drawSphere() {
+    // Create a Rhino sphere
+    const sphere = new rhino.Sphere([0, 0, 0], 12); // Centered at origin
+    console.log('Sphere diameter:', sphere.diameter);
 
-// Camera position
-camera.position.z = 30;
-camera.position.y = 20;
-camera.lookAt(0, 0, 0);
+    // Convert Rhino sphere to Three.js geometry
+    const geometry = new THREE.SphereGeometry(sphere.radius, 32, 32);
+    const material = new THREE.MeshPhongMaterial({ 
+        color: 0x00ff00,
+        specular: 0x111111,
+        shininess: 100
+    });
+    const sphereMesh = new THREE.Mesh(geometry, material);
 
-// OrbitControls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
+    // Add sphere to the scene
+    scene.add(sphereMesh);
+}
+
+// Initialize Three.js scene
+function init() {
+    THREE.Object3D.DEFAULT_UP = new THREE.Vector3(0, 0, 1);
+    
+    // Scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
+    
+    // Camera
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.set(26, -40, 5);
+    
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(10, 10, 10);
+    scene.add(directionalLight);
+    
+    // Controls
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    
+    // Window resize handler
+    window.addEventListener('resize', onWindowResize, false);
+
+    // Draw the sphere
+    drawSphere();
+}
+
+// Convert Rhino mesh to Three.js geometry
+function meshToThreejs(mesh, material) {
+    const loader = new THREE.BufferGeometryLoader();
+    const geometry = loader.parse(mesh.toThreejsJSON());
+    return new THREE.Mesh(geometry, material);
+}
+
+// Handle window resize
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 // Animation loop
 function animate() {
@@ -58,11 +113,10 @@ function animate() {
     controls.update();
     renderer.render(scene, camera);
 }
-animate();
 
-// Handle window resize
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+// Initialize and start
+init();
+loadModel().then(() => {
+    animate();
+    console.log('Model loaded and scene ready');
 });
