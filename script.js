@@ -1,3 +1,10 @@
+
+
+
+// This script creates a 3D sphere using Rhino3dm and Three.js, and sets up a basic scene with lighting and controls. 
+// It also handles window resizing to maintain the aspect ratio of the camera. 
+
+// Import necessary libraries
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import rhino3dm from 'rhino3dm';

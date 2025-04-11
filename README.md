@@ -1,4 +1,4 @@
-# 3DviewerApp_AS
+# 3DviewerStructApp_AS
 
 **Author:** Abhishek Shinde  
 
@@ -17,7 +17,7 @@
 
 ## **About**
 
-A static vanilla JS obj viewer based on rhino3dm.js
+A static vanilla JS obj viewer based on rhino3dm.js and three.js
 
 rhino3dm.js is a javascript library with an associated rhino3dm.wasm (web assembly) that is OpenNURBS plus additional C++ to javascript bindings compiled to web assembly. Web assembly is now an available technology on all major browsers as well as node.js.
 
@@ -38,7 +38,11 @@ This is based on https://mcneel.github.io/rhino3dm/javascript/api/index.html
 
 ## **Usage(Local Deployment)**
 
-
+1. Clone the repository to your local machine.
+2. Open a terminal and navigate to the repository's directory.
+3. Run the following command on the command terminal just opened: python -m http.server 
+4. Open your browser and navigate to:  
+   [http://localhost:8000/index.html](http://localhost:8000/index.html)
 
 
 ---
