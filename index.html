@@ -3,13 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>3dmViewer_App</title>
+    <title>3DviewerStructApp_AS</title>
 </head>
 <body>
     <!-- Import maps polyfill -->
+    <!-- Import Maps polyfill are used to load ES modules in browsers that do not support them natively. This is important for compatibility with older browsers. -->
+    <!-- The polyfill is loaded from a CDN, and it is used to enable the use of import maps in the application. -->
+    <!-- The polyfill is loaded asynchronously to avoid blocking the rendering of the page. --> 
     <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
 
     <!-- Import map for rhino3dm -->
+    <!-- This import map specifies the locations of the modules that will be used in the application. It allows the browser to resolve module imports to their respective URLs. --> 
+    <!-- The rhino3dm module is loaded from a CDN, and the three.js library is also loaded from a CDN. -->
+    <!-- The rhino3dm module is a JavaScript library for working with 3D geometry, and three.js is a popular library for rendering 3D graphics in the browser. -->
     <script type="importmap">
     {
         "imports": {
@@ -21,6 +27,8 @@
     </script>
 
     <!-- Main app logic -->
+    <!-- The main application logic is loaded from a separate JavaScript file. This file contains the code that initializes the 3D viewer, loads the 3D model, and handles user interactions. -->
+    <!-- The script is loaded as a module, which allows it to use ES module syntax for importing and exporting code. This is important for maintaining a clean and modular codebase. -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
