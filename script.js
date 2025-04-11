@@ -1,38 +1,52 @@
-// Importing the required modules from Rhino3dm and Three.js libraries
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js'; // Use this to from npm jsdelivery to import Three.js
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js'   //Use this to import from npm jsdelivery to import OrbitControls
-import rhino3dm from 'rhino3dm'                                                // Use this to import Rhino3dm                                     
-import { Rhino3dmLoader } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/loaders/3DMLoader.js';  // Use this to import Rhino3dmLoader
-import { Scene, PerspectiveCamera, WebGLRenderer } from 'three'                // Use this to import Scene, PerspectiveCamera, and WebGLRenderer
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import rhino3dm from 'rhino3dm';
 
-// Initialize Rhino3dm library and load the Rhino3dm module
-const rhino = await rhino3dm(); 
+// Initialize Rhino3dm
+const rhino = await rhino3dm();
 
-// Create a new sphere object with center at (1,2,3) and radius 12
-const sphere = new rhino.Sphere([1, 2, 3], 12);
+// Create sphere
+const sphere = new rhino.Sphere([0, 0, 0], 12);  // Centered at origin
+console.log('Sphere diameter:', sphere.diameter);
 
-// Log the diameter of the sphere to the console
-console.log(sphere.diameter);
-
-// Set up the Three.js scene
-const scene = new Scene();
-const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new WebGLRenderer();
+// Three.js setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0xaaaaaa);
 document.body.appendChild(renderer.domElement);
 
-// Add OrbitControls for interaction
-const controls = new OrbitControls(camera, renderer.domElement);
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(10, 10, 10);
+scene.add(directionalLight);
 
-// Convert the Rhino sphere to a Three.js geometry
-const sphereMesh = new THREE.Mesh(
-    new THREE.SphereGeometry(sphere.radius, 32, 32),
-    new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true })
+// Convert Rhino sphere to Three.js mesh
+const geometry = new THREE.SphereGeometry(
+    sphere.radius, 
+    32, 
+    32
 );
+const material = new THREE.MeshPhongMaterial({ 
+    color: 0x00ff00,
+    wireframe: false,
+    shininess: 100
+});
+const sphereMesh = new THREE.Mesh(geometry, material);
 scene.add(sphereMesh);
 
-// Position the camera
-camera.position.z = 50;
+// Camera position
+camera.position.z = 30;
+camera.position.y = 20;
+camera.lookAt(0, 0, 0);
+
+// OrbitControls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
 
 // Animation loop
 function animate() {
@@ -41,3 +55,10 @@ function animate() {
     renderer.render(scene, camera);
 }
 animate();
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
