@@ -1,9 +1,9 @@
 // Importing the required modules from Rhino3dm and Three.js libraries
-import * as THREE from 'three'                                                  // Use this to import Three.js
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'    //Use this to import OrbitControls
-import rhino3dm from 'rhino3dm'                                           // Use this to import Rhino3dm                                     
-import { Rhino3dmLoader } from 'three/examples/jsm/loaders/Rhino3dmLoader.js'
-import { Scene, PerspectiveCamera, WebGLRenderer } from 'three'
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js'; // Use this to from npm jsdelivery to import Three.js
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js'   //Use this to import from npm jsdelivery to import OrbitControls
+import rhino3dm from 'rhino3dm'                                                // Use this to import Rhino3dm                                     
+import { Rhino3dmLoader } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/loaders/3DMLoader.js';  // Use this to import Rhino3dmLoader
+import { Scene, PerspectiveCamera, WebGLRenderer } from 'three'                // Use this to import Scene, PerspectiveCamera, and WebGLRenderer
 
 // Initialize Rhino3dm library and load the Rhino3dm module
 const rhino = await rhino3dm(); 
