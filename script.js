@@ -1,6 +1,3 @@
-
-
-
 // This script creates a 3D sphere using Rhino3dm and Three.js, and sets up a basic scene with lighting and controls. 
 // It also handles window resizing to maintain the aspect ratio of the camera. 
 
