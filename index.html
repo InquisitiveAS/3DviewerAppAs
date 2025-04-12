@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3dmViewer_StructApp</title>
+    <title>Rhino3dm.js + Three.js Viewer</title>
+    <link rel="icon" href="data:,"> <!-- Prevent favicon 404 error -->
     <style>
         /* General styles */
         body {
@@ -33,33 +34,31 @@
 </head>
 <body>
     <!-- Project Title -->
-    <div id="title">3d_Graphic_Statics:3dmViewer_StructApp</div>
+    <div id="title">My Rhino3dm.js + Three.js Project</div>
 
-    <!-- Import maps polyfill -->
-	<!-- Import Maps polyfill are used to load ES modules in browsers that do not support them natively. This is important for compatibility with older browsers. -->
-    <!-- The polyfill is loaded from a CDN, and it is used to enable the use of import maps in the application. -->
-    <!-- The polyfill is loaded asynchronously to avoid blocking the rendering of the page. --> 
+    <!-- Import Maps Polyfill -->
+    <!-- The polyfill enables the use of import maps in browsers that do not natively support them. -->
+    <!-- It is loaded asynchronously to avoid blocking the page rendering. -->
     <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
 
-    <!-- Import map for dependencies -->
-	<!-- Import map for rhino3dm -->
-    <!-- This import map specifies the locations of the modules that will be used in the application. It allows the browser to resolve module imports to their respective URLs. --> 
-    <!-- The rhino3dm module is loaded from a CDN, and the three.js library is also loaded from a CDN. -->
-    <!-- The rhino3dm module is a JavaScript library for working with 3D geometry, and three.js is a popular library for rendering 3D graphics in the browser. -->
+    <!-- Import Map for Dependencies -->
+    <!-- This import map specifies the locations of the modules used in the application. -->
+    <!-- It allows the browser to resolve module imports to their respective URLs. -->
     <script type="importmap">
-    {
-        "imports": {
-            "rhino3dm": "https://cdn.jsdelivr.net/npm/rhino3dm@8.17.0/rhino3dm.module.min.js",
-            "three": "https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js"
-            "three/examples/jsm/loaders/FontLoader": "https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/loaders/FontLoader.js",
-            "three/examples/jsm/geometries/TextGeometry": "https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/geometries/TextGeometry.js"
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js", /* Three.js core library */
+                "three/examples/jsm/controls/OrbitControls": "https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js", /* OrbitControls for camera interaction */
+                "three/examples/jsm/loaders/FontLoader": "https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/loaders/FontLoader.js", /* FontLoader for loading fonts */
+                "three/examples/jsm/geometries/TextGeometry": "https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/geometries/TextGeometry.js", /* TextGeometry for creating 3D text */
+                "rhino3dm": "https://cdn.jsdelivr.net/npm/rhino3dm@8.17.0/rhino3dm.module.min.js" /* Rhino3dm library for working with 3D geometry */
+            }
         }
-    }
     </script>
 
-    <!-- Main app logic -->
-	<!-- The main application logic is loaded from a separate JavaScript file. This file contains the code that initializes the 3D viewer, loads the 3D model, and handles user interactions. -->
-    <!-- The script is loaded as a module, which allows it to use ES module syntax for importing and exporting code. This is important for maintaining a clean and modular codebase. -->
+    <!-- Main Application Logic -->
+    <!-- The main JavaScript file initializes the 3D viewer, loads the Rhino model, and handles user interactions. -->
+    <!-- The script is loaded as a module to enable ES module syntax for importing/exporting code. -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
