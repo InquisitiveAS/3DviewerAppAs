@@ -17,7 +17,9 @@
 
 ## **About**
 
-A static vanilla JS obj viewer based on rhino3dm.js and three.js
+A static vanilla JS obj viewer based on rhino3dm.js and three.js. Documentation of conversion of rhino3dm.js geometry with three.js is as below: 
+
+https://threejs.org/docs/#examples/en/loaders/3DMLoader 
 
 rhino3dm.js is a javascript library with an associated rhino3dm.wasm (web assembly) that is OpenNURBS plus additional C++ to javascript bindings compiled to web assembly. Web assembly is now an available technology on all major browsers as well as node.js.
 
