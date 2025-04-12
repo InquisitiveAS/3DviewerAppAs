@@ -1,6 +1,11 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import rhino3dm from 'rhino3dm';
+// Description: This script loads a 3DM file using Rhino3dm, converts the mesh to Three.js geometry, and displays it in a Three.js scene. 
+// It also draws a sphere using Rhino3dm and adds it to the scene. The script includes basic lighting and camera controls for interaction.
+
+
+// Import necessary libraries 
+import * as THREE from 'three';                          // Use ES6 import syntax for Three.js
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';        // Use this for OrbitControls to work with ES6 modules
+import rhino3dm from 'rhino3dm';                       // Use ES6 import syntax for Rhino3dm
 
 // Initialize Rhino3dm
 const rhino = await rhino3dm();
