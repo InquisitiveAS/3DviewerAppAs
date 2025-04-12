@@ -39,6 +39,9 @@ async function loadModel() {
 
 // Initialize Three.js scene
 function init() {
+    
+    // Set default up vector for Three.js objects
+    // This is important for correct orientation of the objects in the scene 
     THREE.Object3D.DEFAULT_UP = new THREE.Vector3(0, 0, 1);
     
     // Scene
