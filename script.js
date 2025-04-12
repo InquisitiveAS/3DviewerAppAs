@@ -31,9 +31,9 @@ async function loadModel() {
         // Create a material for the mesh 
         // This material will be used for all meshes loaded from the 3DM file
         const material = new THREE.MeshPhongMaterial({ 
-            color: 0x2194ce,
-            specular: 0x111111,
-            shininess: 100
+            color: 0x2194ce,         //0x2194ce is a shade of blue 
+            specular: 0x111111,      //0x111111 is a shade of gray
+            shininess: 100           //100 is a high shininess value for the material 
         });
 
         // Iterate through the objects in the document and convert them to Three.js meshes 
@@ -61,41 +61,51 @@ function init() {
     // This is important for correct orientation of the objects in the scene 
     THREE.Object3D.DEFAULT_UP = new THREE.Vector3(0, 0, 1);
     
-    // Scene
+    // Scene setup 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
     
-    // Camera
+    // Camera setup 
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(26, -40, 5);
+    //camera.position.set(26, -40, 5);   // This camera position is commented out 
+    camera.position.set(50, 50, 50);   // Adjusted position for better view of grid and model
     
-    // Renderer
+    // Renderer setup 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-    
-    // Lighting
+
+    // Lighting setup 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
+
+    // Add grid helper to visualize origin and reference grid
+    const size = 100;       // Size of the grid (width and height)
+    const divisions = 100;  // Number of divisions in the grid
+    const gridHelper = new THREE.GridHelper(size, divisions);
+    scene.add(gridHelper);
     
     // Controls
     controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+    controls.enableDamping = true;        // Enable damping for smooth interaction 
+    controls.dampingFactor = 0.05;        // Damping factor for smoothness 
+    controls.screenSpacePanning = false;  // Disable screen space panning along z-axis ie camera's z-axis
+    controls.target.set(0, 0, 0);         // Set target to origin of the scene (grid center) 
     
     // Window resize handler
     window.addEventListener('resize', onWindowResize, false);
+
 }
 
 // Convert Rhino mesh to Three.js geometry
 function meshToThreejs(mesh, material) {
-    const loader = new THREE.BufferGeometryLoader();
-    const geometry = loader.parse(mesh.toThreejsJSON());
-    return new THREE.Mesh(geometry, material);
+    const loader = new THREE.BufferGeometryLoader();     // Create a new BufferGeometryLoader instance 
+    const geometry = loader.parse(mesh.toThreejsJSON()); // Convert Rhino mesh to Three.js JSON format 
+    return new THREE.Mesh(geometry, material);           // Create a new Three.js mesh using the geometry and material 
 }
 
 // Handle window resize
@@ -105,7 +115,7 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-// Animation loop
+// Animation loop for rendering the scene and updating controls 
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
