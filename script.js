@@ -9,7 +9,7 @@ console.log('Rhino3dm loaded:', rhino);
 
 // Scene setup
 let scene, camera, renderer, controls;
-const file = './resources/01_3DGS_polyhedra.3dm'; // Make sure this file exists in your server root
+const file = './resources/3DGS_polyhedra_rhv8.3dm'; // Make sure this file exists in your server root
 
 // Load and process 3DM file using asynchronous function 
 // This function fetches the 3DM file, converts it to an ArrayBuffer, and loads it into a Rhino document 
@@ -27,6 +27,13 @@ async function loadModel() {
         
         console.log('3DM file loaded:', doc); // Log the loaded document 
         console.log('Number of objects in the document:', doc.objects().count); // Log the number of objects 
+
+        // Create parent container for rotation - This is best practice for organizing the scene and keeping the hierarchy clean
+        // This allows for easy manipulation of the entire model as a single entity 
+        // and helps maintain the correct orientation of the model in the scene 
+        // The modelContainer will be used to group all the meshes loaded from the 3DM file 
+        const modelContainer = new THREE.Group();
+        modelContainer.rotation.x = -Math.PI/2; // Fix Z-up to Y-up
 
         // Create a material for the mesh 
         // This material will be used for all meshes loaded from the 3DM file
@@ -46,9 +53,13 @@ async function loadModel() {
                 // The meshToThreejs function takes a Rhino mesh and a Three.js material as input and returns a Three.js mesh
                 // The meshToThreejs function is defined below and uses the BufferGeometryLoader to convert the Rhino mesh to Three.js geometry 
                 const threeMesh = meshToThreejs(mesh, material);
-                scene.add(threeMesh);
+                
+                //scene.add(threeMesh); // This line is commented out to avoid adding the mesh directly to the scene 
+                modelContainer.add(threeMesh); // Add the mesh to the model container instead 
             }
         }
+        // Add the model container to the scene
+        scene.add(modelContainer); // This line adds the model container to the scene 
     } catch (error) {
         console.error('Error loading model:', error);
     }
@@ -101,6 +112,7 @@ function init() {
 
 }
 
+// Custom function to convert Rhino mesh to Three.js mesh 
 // Convert Rhino mesh to Three.js geometry
 function meshToThreejs(mesh, material) {
     const loader = new THREE.BufferGeometryLoader();     // Create a new BufferGeometryLoader instance 
