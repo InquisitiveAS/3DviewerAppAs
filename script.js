@@ -2,6 +2,8 @@
 import * as THREE from 'three';                                                // Use ES6 import syntax for Three.js
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';  // Use this for OrbitControls to work with ES6 modules
 import rhino3dm from 'rhino3dm';                                               // Use ES6 import syntax for Rhino3dm
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';       // Use ES6 import syntax for FontLoader 
+ 
 
 // Initialize Rhino3dm 
 const rhino = await rhino3dm();
@@ -63,6 +65,33 @@ async function loadModel() {
     } catch (error) {
         console.error('Error loading model:', error);
     }
+}
+
+// Add 3D text to the scene
+function addTitle() {
+    const loader = new FontLoader();
+    loader.load(
+        'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
+        (font) => {
+            const textGeometry = new TextGeometry('My Project Title', {
+                font: font,
+                size: 5,
+                height: 1,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 0.5,
+                bevelSize: 0.2,
+                bevelSegments: 5,
+            });
+
+            const textMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+            // Position the text above the grid or model
+            textMesh.position.set(-20, 30, 0); // Adjust position as needed
+            scene.add(textMesh);
+        }
+    );
 }
 
 // Initialize Three.js scene
@@ -134,8 +163,11 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+
 // Initialize and start
 init();
+addTitle(); // Call the addTitle function to add the title to the scene
+// Load the model and start the animation loop
 loadModel().then(() => {
     animate();
     console.log('Model loaded and scene ready');

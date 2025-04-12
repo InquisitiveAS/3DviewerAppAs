@@ -1,18 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>3DviewerStructApp_AS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3dmViewer_StructApp</title>
+    <style>
+        /* General styles */
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars */
+            font-family: Arial, sans-serif;
+        }
+
+        /* Title styling */
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            z-index: 1; /* Ensure it appears above the canvas */
+        }
+
+        /* Canvas styling */
+        canvas {
+            display: block; /* Remove extra space below canvas */
+        }
+    </style>
 </head>
 <body>
+    <!-- Project Title -->
+    <div id="title">3d_Graphic_Statics:3dmViewer_StructApp</div>
+
     <!-- Import maps polyfill -->
-    <!-- Import Maps polyfill are used to load ES modules in browsers that do not support them natively. This is important for compatibility with older browsers. -->
+	<!-- Import Maps polyfill are used to load ES modules in browsers that do not support them natively. This is important for compatibility with older browsers. -->
     <!-- The polyfill is loaded from a CDN, and it is used to enable the use of import maps in the application. -->
     <!-- The polyfill is loaded asynchronously to avoid blocking the rendering of the page. --> 
     <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
 
-    <!-- Import map for rhino3dm -->
+    <!-- Import map for dependencies -->
+	<!-- Import map for rhino3dm -->
     <!-- This import map specifies the locations of the modules that will be used in the application. It allows the browser to resolve module imports to their respective URLs. --> 
     <!-- The rhino3dm module is loaded from a CDN, and the three.js library is also loaded from a CDN. -->
     <!-- The rhino3dm module is a JavaScript library for working with 3D geometry, and three.js is a popular library for rendering 3D graphics in the browser. -->
@@ -20,14 +50,15 @@
     {
         "imports": {
             "rhino3dm": "https://cdn.jsdelivr.net/npm/rhino3dm@8.17.0/rhino3dm.module.min.js",
-            "three": "https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js",
-            "three/": "https://cdn.jsdelivr.net/npm/three@0.132.2/"
+            "three": "https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js"
+            "three/examples/jsm/loaders/FontLoader": "https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/loaders/FontLoader.js",
+            "three/examples/jsm/geometries/TextGeometry": "https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/geometries/TextGeometry.js"
         }
     }
     </script>
 
     <!-- Main app logic -->
-    <!-- The main application logic is loaded from a separate JavaScript file. This file contains the code that initializes the 3D viewer, loads the 3D model, and handles user interactions. -->
+	<!-- The main application logic is loaded from a separate JavaScript file. This file contains the code that initializes the 3D viewer, loads the 3D model, and handles user interactions. -->
     <!-- The script is loaded as a module, which allows it to use ES module syntax for importing and exporting code. This is important for maintaining a clean and modular codebase. -->
     <script type="module" src="script.js"></script>
 </body>
