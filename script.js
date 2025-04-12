@@ -43,6 +43,8 @@ async function loadModel() {
             const mesh = objects.get(i).geometry();
             if (mesh instanceof rhino.Mesh) {
                 // Convert the Rhino mesh to Three.js mesh and add it to the scene using meshToThreejs function 
+                // The meshToThreejs function takes a Rhino mesh and a Three.js material as input and returns a Three.js mesh
+                // The meshToThreejs function is defined below and uses the BufferGeometryLoader to convert the Rhino mesh to Three.js geometry 
                 const threeMesh = meshToThreejs(mesh, material);
                 scene.add(threeMesh);
             }
