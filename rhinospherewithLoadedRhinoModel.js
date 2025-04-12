@@ -8,7 +8,7 @@ console.log('Rhino3dm loaded:', rhino);
 
 // Scene setup
 let scene, camera, renderer, controls;
-const file = 'hello_mesh.3dm'; // Make sure this file exists in your server root
+const file = './resources/hello_mesh.3dm'; // Make sure this file exists in your server root
 
 // Load and process 3DM file
 async function loadModel() {
@@ -35,6 +35,25 @@ async function loadModel() {
     } catch (error) {
         console.error('Error loading model:', error);
     }
+}
+
+// Draw a sphere using Rhino and Three.js
+function drawSphere() {
+    // Create a Rhino sphere
+    const sphere = new rhino.Sphere([0, 0, 0], 4); // Centered at origin
+    console.log('Sphere diameter:', sphere.diameter);
+
+    // Convert Rhino sphere to Three.js geometry
+    const geometry = new THREE.SphereGeometry(sphere.radius, 4, 4);
+    const material = new THREE.MeshPhongMaterial({ 
+        color: 0x00ff00,
+        specular: 0x111111,
+        shininess: 100
+    });
+    const sphereMesh = new THREE.Mesh(geometry, material);
+
+    // Add sphere to the scene
+    scene.add(sphereMesh);
 }
 
 // Initialize Three.js scene
@@ -69,6 +88,9 @@ function init() {
     
     // Window resize handler
     window.addEventListener('resize', onWindowResize, false);
+
+    // Draw the sphere
+    drawSphere();
 }
 
 // Convert Rhino mesh to Three.js geometry
