@@ -9,7 +9,7 @@ console.log('Rhino3dm loaded:', rhino);
 
 // Scene setup
 let scene, camera, renderer, controls;
-const file = './resources/your_file_name.3dm'; // Replace with the actual path to your .3dm file
+const file = './resources/3DGS_polyhedra_rhv8.3dm'; // Replace with the actual path to your .3dm file
 
 // Load and process 3DM file using asynchronous function
 async function loadModel() {
