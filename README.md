@@ -32,7 +32,7 @@ This is based on https://mcneel.github.io/rhino3dm/javascript/api/index.html
 
 Ability to visualize Iso-curves, Mesh-Edges, Point Clouds, SubD similar to rhino example on three. js example 
 
-
+The project has several versions for script.js jsut so that the user can learn 
 
 ---
 
