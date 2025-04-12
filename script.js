@@ -11,8 +11,14 @@ console.log('Rhino3dm loaded:', rhino);
 let scene, camera, renderer, controls;
 const file = 'hello_mesh.3dm'; // Make sure this file exists in your server root
 
-// Load and process 3DM file
+// Load and process 3DM file using asynchronous function 
+// This function fetches the 3DM file, converts it to an ArrayBuffer, and loads it into a Rhino document 
+// It then iterates through the objects in the document, converts them to Three.js meshes, and adds them to the scene 
+// Asynchronous functions are used to handle operations that may take time, such as fetching data from a server or loading files 
+// This allows the program to continue executing other code while waiting for the asynchronous operation to complete 
+// This is particularly useful in web applications where user experience is important and we want to avoid blocking the main thread and causing the UI to freeze 
 async function loadModel() {
+    // try catch block to handle errors during the loading process 
     try {
         const res = await fetch(file);                  // Fetch the 3DM file
         const buffer = await res.arrayBuffer();         // Convert response to ArrayBuffer
@@ -22,17 +28,21 @@ async function loadModel() {
         console.log('3DM file loaded:', doc); // Log the loaded document 
         console.log('Number of objects in the document:', doc.objects().count); // Log the number of objects 
 
-        //Create a material for the mesh 
+        // Create a material for the mesh 
+        // This material will be used for all meshes loaded from the 3DM file
         const material = new THREE.MeshPhongMaterial({ 
             color: 0x2194ce,
             specular: 0x111111,
             shininess: 100
         });
 
+        // Iterate through the objects in the document and convert them to Three.js meshes 
         const objects = doc.objects();
         for (let i = 0; i < objects.count; i++) {
+            // Get the geometry of the object and check if it's a mesh 
             const mesh = objects.get(i).geometry();
             if (mesh instanceof rhino.Mesh) {
+                // Convert the Rhino mesh to Three.js mesh and add it to the scene using meshToThreejs function 
                 const threeMesh = meshToThreejs(mesh, material);
                 scene.add(threeMesh);
             }

@@ -26,7 +26,7 @@ async function loadModel() {
         console.log('3DM file loaded:', doc);             // Log the loaded document
         // console.log('Number of objects in the document:', doc.objects().count); // Log the number of objects
 
-        //Create a material for the mesh
+        // Create a material for the mesh
         // This material will be used for all meshes loaded from the 3DM file 
         const material = new THREE.MeshPhongMaterial({ 
             color: 0x2194ce,
