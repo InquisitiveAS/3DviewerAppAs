@@ -9,7 +9,7 @@ console.log('Rhino3dm loaded:', rhino);
 
 // Scene setup
 let scene, camera, renderer, controls;
-const file = 'hello_mesh.3dm'; // Make sure this file exists in your server root
+const file = './resources/hello_mesh.3dm'; // Make sure this file exists in your server root
 
 // Load and process 3DM file using asynchronous function 
 // This function fetches the 3DM file, converts it to an ArrayBuffer, and loads it into a Rhino document 
