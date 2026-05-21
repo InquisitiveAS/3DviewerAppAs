@@ -24,12 +24,8 @@ async function loadModel() {
         console.log('3DM file loaded:', doc);           // Log the loaded document 
         console.log('Number of objects in the document:', doc.objects().count); // Log the number of objects 
 
-         // Create parent container for rotation
-         const modelContainer = new THREE.Group();
-         modelContainer.rotation.x = -Math.PI/2; // Fix Z-up to Y-up
-
         // Create a material for the mesh
-        const material = new THREE.MeshPhongMaterial({ 
+        const material = new THREE.MeshPhongMaterial({
             color: 0x2194ce,
             specular: 0x111111,
             shininess: 100
@@ -41,11 +37,9 @@ async function loadModel() {
             const mesh = objects.get(i).geometry();
             if (mesh instanceof rhino.Mesh) {
                 const threeMesh = meshToThreejs(mesh, material);
-                //scene.add(threeMesh); // Uncomment this line to add each mesh directly to the scene
-                modelContainer.add(threeMesh); // Add to the container instead 
+                scene.add(threeMesh);
             }
         }
-        scene.add(modelContainer); // Add the container to the scene 
     } catch (error) {
         console.error('Error loading model:', error);
     }
@@ -81,6 +75,7 @@ function init() {
     const size = 100;       // Size of the grid (width and height)
     const divisions = 100;  // Number of divisions in the grid
     const gridHelper = new THREE.GridHelper(size, divisions);
+    gridHelper.rotation.x = Math.PI / 2; // Lay grid flat in XY plane to match Z-up
     scene.add(gridHelper);
 
     // Controls setup for panning and rotating around origin
