@@ -10,8 +10,8 @@
 
 ---
 
-## GitHub Pages Web Link  
-[Visit the Application]()
+## Netlify Hosted Link
+[Visit the Application](https://graphicstatics-viewer-daslabs.netlify.app/)
 
 ---
 
