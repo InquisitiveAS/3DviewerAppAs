@@ -154,11 +154,12 @@ function fitCameraToTurntable() {
     const fovH = 2 * Math.atan(Math.tan(fovV / 2) * camera.aspect);
     const distForHeight = halfHeight / Math.tan(fovV / 2);
     const distForWidth = radialExtent / Math.tan(fovH / 2);
-    const distance = Math.max(distForHeight, distForWidth) * 1.6; // margin
+    const distance = Math.max(distForHeight, distForWidth) * 1.25; // tighter framing
 
-    // Clamp the camera height so the two-point shear stays modest.
-    // shear = heightOffset / distance / tan(fovV/2), so this caps shear at MAX_SHEAR.
-    const MAX_SHEAR = 0.35;
+    // Camera height controls the two-point tilt. With the corrected shear sign,
+    // larger values give a more pronounced Rhino-perspective tilt without the
+    // model sliding off-screen.
+    const MAX_SHEAR = 0.45;
     const heightOffset = distance * MAX_SHEAR * Math.tan(fovV / 2);
 
     // Aim at the model's vertical centroid (XY stays on the rotation axis)
@@ -217,12 +218,14 @@ function applyTwoPointPerspective() {
     camera.up.set(0, 0, 1);
     camera.lookAt(target.x, target.y, camera.position.z);
 
-    // Apply vertical principal-point shift equal to the would-be tilt angle.
-    // shift in NDC = tan(tilt) / tan(fov/2) = (heightDiff / horizDistance) / tan(fov/2)
+    // Apply vertical principal-point shift to recenter the target.
+    // For an above-target camera looking horizontally, the target projects to
+    // NDC y = -S - elements[9] where S = heightDiff / (horizDistance * tan(fov/2)).
+    // Setting elements[9] = -S brings the target to screen center.
     camera.updateProjectionMatrix();
     const fovRad = THREE.MathUtils.degToRad(camera.fov);
     camera.projectionMatrix.elements[9] =
-        (heightDiff / horizDistance) / Math.tan(fovRad / 2);
+        -(heightDiff / horizDistance) / Math.tan(fovRad / 2);
     camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
 }
 
