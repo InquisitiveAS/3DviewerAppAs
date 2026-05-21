@@ -120,6 +120,8 @@ function setupViewCube() {
     document.querySelectorAll('#viewcube button').forEach((btn) => {
         btn.addEventListener('click', () => applyView(btn.dataset.view));
     });
+    const fit = document.getElementById('autocenter');
+    if (fit) fit.addEventListener('click', () => fitCameraToTurntable());
 }
 
 function applyView(name) {
