@@ -80,24 +80,18 @@ function init() {
     gridHelper.rotation.x = Math.PI / 2; // Lay grid flat in XY plane to match Z-up
     scene.add(gridHelper);
 
-    // Colored world axes on the ground plane (red = X, green = Y) like Rhino
+    // Colored world axes on the ground plane (red = X, green = Y) like Rhino.
+    // ArrowHelper draws a thick arrow with a head — needed because WebGL line
+    // width is always 1px regardless of LineBasicMaterial.linewidth.
     const axisLength = size / 2;
-    const xAxis = new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(axisLength, 0, 0)
-        ]),
-        new THREE.LineBasicMaterial({ color: 0xcc0000 })
-    );
-    const yAxis = new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(0, axisLength, 0)
-        ]),
-        new THREE.LineBasicMaterial({ color: 0x00aa00 })
-    );
-    scene.add(xAxis);
-    scene.add(yAxis);
+    scene.add(new THREE.ArrowHelper(
+        new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0),
+        axisLength, 0xcc0000, 4, 2
+    ));
+    scene.add(new THREE.ArrowHelper(
+        new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0),
+        axisLength, 0x00aa00, 4, 2
+    ));
 
     // Turntable group at origin — only the loaded geometry spins, no visible disc
     turntable = new THREE.Group();
@@ -122,23 +116,24 @@ function init() {
 // constant so the tilt (and therefore the two-point shear) stays consistent.
 function setupViewCube() {
     const r = 60;                                     // radial distance in XY
-    const h = 20;                                     // height above ground
+    const h = 20;                                     // height above ground for cardinal views
     const d = r / Math.SQRT2;                         // diagonal component
     const views = {
-        N:   [0,  -r, h],
-        S:   [0,   r, h],
-        E:   [-r,  0, h],
-        W:   [r,   0, h],
-        NE:  [-d, -d, h],
-        NW:  [d,  -d, h],
-        SE:  [-d,  d, h],
-        SW:  [d,   d, h],
-        ISO: [d,  -d, h],
+        N:   [0,  -r,  h],
+        S:   [0,   r,  h],
+        E:   [-r,  0,  h],
+        W:   [r,   0,  h],
+        NE:  [-d, -d,  h],
+        NW:  [d,  -d,  h],
+        SE:  [-d,  d,  h],
+        SW:  [d,   d,  h],
+        ISO: [d,  -d,  40],                           // higher angle for ISO
     };
     document.querySelectorAll('#viewcube button').forEach((btn) => {
         btn.addEventListener('click', () => {
             const v = views[btn.dataset.view];
             if (!v) return;
+            console.log('View cube → ' + btn.dataset.view, v);
             controls.target.set(0, 0, 0);
             camera.position.set(v[0], v[1], v[2]);
         });
