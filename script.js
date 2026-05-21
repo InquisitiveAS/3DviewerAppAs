@@ -132,40 +132,61 @@ function applyView(name) {
     // controls.target is set by fitCameraToTurntable to the model's centroid
 }
 
-// Auto-frame: derive camera distance, target, and height from the model's
-// bounding box so the geometry is centered on screen and the two-point shear
-// stays in a comfortable range no matter how the file was authored.
+// Walk every mesh vertex once so we get the true visual centroid and the
+// max distance from it. Using bbox center alone biases tall thin members
+// (the model ends up bottom-heavy when most mass sits low).
+function computeModelStats() {
+    const sum = new THREE.Vector3();
+    let count = 0;
+    const v = new THREE.Vector3();
+    turntable.updateMatrixWorld(true);
+    turntable.traverse((obj) => {
+        if (!obj.isMesh || !obj.geometry || !obj.geometry.attributes.position) return;
+        const pos = obj.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+            v.fromBufferAttribute(pos, i).applyMatrix4(obj.matrixWorld);
+            sum.add(v);
+            count++;
+        }
+    });
+    if (count === 0) return null;
+    const centroid = sum.divideScalar(count);
+
+    let radialExtent = 0;       // worst-case XY distance from rotation axis
+    let halfHeight = 0;         // worst-case Z distance from centroid
+    turntable.traverse((obj) => {
+        if (!obj.isMesh || !obj.geometry || !obj.geometry.attributes.position) return;
+        const pos = obj.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+            v.fromBufferAttribute(pos, i).applyMatrix4(obj.matrixWorld);
+            radialExtent = Math.max(radialExtent, Math.hypot(v.x, v.y));
+            halfHeight = Math.max(halfHeight, Math.abs(v.z - centroid.z));
+        }
+    });
+    return { centroid, radialExtent, halfHeight };
+}
+
+// Auto-frame the camera so the model sits centered with equal vertical
+// margin above and below, regardless of which dimension is larger.
 function fitCameraToTurntable() {
     if (!turntable || turntable.children.length === 0) return;
-
-    const box = new THREE.Box3().setFromObject(turntable);
-    if (box.isEmpty()) return;
-
-    // Worst-case radial extent from the Z rotation axis (origin in XY)
-    let radialExtent = 0;
-    for (const x of [box.min.x, box.max.x]) {
-        for (const y of [box.min.y, box.max.y]) {
-            radialExtent = Math.max(radialExtent, Math.hypot(x, y));
-        }
-    }
-    const center = box.getCenter(new THREE.Vector3());
-    const halfHeight = (box.max.z - box.min.z) / 2;
+    const stats = computeModelStats();
+    if (!stats) return;
+    const { centroid, radialExtent, halfHeight } = stats;
 
     // Distance needed to frame both the radial sweep and the vertical extent
     const fovV = THREE.MathUtils.degToRad(camera.fov);
     const fovH = 2 * Math.atan(Math.tan(fovV / 2) * camera.aspect);
     const distForHeight = halfHeight / Math.tan(fovV / 2);
     const distForWidth = radialExtent / Math.tan(fovH / 2);
-    const distance = Math.max(distForHeight, distForWidth) * 1.25; // tighter framing
+    const distance = Math.max(distForHeight, distForWidth) * 1.2;
 
-    // Camera height controls the two-point tilt. With the corrected shear sign,
-    // larger values give a more pronounced Rhino-perspective tilt without the
-    // model sliding off-screen.
-    const MAX_SHEAR = 0.45;
+    // Camera height — clamped so the two-point shear stays in a sane range
+    const MAX_SHEAR = 0.4;
     const heightOffset = distance * MAX_SHEAR * Math.tan(fovV / 2);
 
-    // Aim at the model's vertical centroid (XY stays on the rotation axis)
-    const targetZ = center.z;
+    // Aim at the vertex-averaged centroid (XY locked to the rotation axis)
+    const targetZ = centroid.z;
     controls.target.set(0, 0, targetZ);
 
     const d = distance / Math.SQRT2;
@@ -182,11 +203,11 @@ function fitCameraToTurntable() {
         ISO: [d,         -d,        targetZ + heightOffset * 1.4],
     };
 
-    // Push the far plane out so the larger orbit distance doesn't clip the model
     camera.far = Math.max(camera.far, distance * 4);
     camera.updateProjectionMatrix();
 
     applyView(currentView);
+    console.log('Autocenter →', { centroid, radialExtent, halfHeight, distance, heightOffset });
 }
 
 // Convert Rhino mesh to Three.js geometry
