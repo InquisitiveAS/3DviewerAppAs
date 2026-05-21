@@ -17,7 +17,7 @@
 
 ## **Preview**
 
-![Viewer preview](docs/screenshot.png)
+![Viewer preview](resources/customviewerUI.png)
 
 ---
 
