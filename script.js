@@ -10,7 +10,7 @@ const rhino = await rhino3dm();
 console.log('Rhino3dm loaded:', rhino);
 
 // Scene setup
-let scene, camera, renderer, controls;
+let scene, camera, renderer, controls, turntable;
 const file = './resources/3DGS_polyhedra_rhv8.3dm'; // Make sure this file exists in your server root
 
 // Load and process 3DM file using asynchronous function
@@ -32,12 +32,13 @@ async function loadModel() {
         });
 
         // Iterate through the objects in the document and convert them to Three.js meshes
+        // Added to the turntable group so they rotate with the disc
         const objects = doc.objects();
         for (let i = 0; i < objects.count; i++) {
             const mesh = objects.get(i).geometry();
             if (mesh instanceof rhino.Mesh) {
                 const threeMesh = meshToThreejs(mesh, material);
-                scene.add(threeMesh);
+                turntable.add(threeMesh);
             }
         }
     } catch (error) {
@@ -54,9 +55,9 @@ function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
 
-    // Camera setup
+    // Camera setup — positioned at model height so the view is horizontal (two-point perspective)
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(50, 50, 50); // Adjusted position for better view of grid and model
+    camera.position.set(60, 60, 10);
 
     // Renderer setup
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -78,12 +79,29 @@ function init() {
     gridHelper.rotation.x = Math.PI / 2; // Lay grid flat in XY plane to match Z-up
     scene.add(gridHelper);
 
-    // Controls setup for panning and rotating around origin
+    // Turntable group at origin — the disc + model rotate around Z together
+    turntable = new THREE.Group();
+    scene.add(turntable);
+
+    // Rotating disc at 0,0,0
+    const discGeometry = new THREE.CylinderGeometry(15, 15, 0.3, 64);
+    const discMaterial = new THREE.MeshPhongMaterial({
+        color: 0x444444,
+        specular: 0x222222,
+        shininess: 60
+    });
+    const disc = new THREE.Mesh(discGeometry, discMaterial);
+    disc.rotation.x = Math.PI / 2; // Lay the disc flat in XY plane (Z-up)
+    turntable.add(disc);
+
+    // Controls setup — lock polar angle so vertical lines stay vertical (two-point perspective)
     controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;               // Enable damping for smooth interaction
-    controls.dampingFactor = 0.05;               // Adjust damping factor
-    controls.screenSpacePanning = false;         // Prevent panning along z-axis
-    controls.target.set(0, 0, 0);                // Focus on origin (grid center)
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
+    controls.target.set(0, 0, 0);
+    controls.minPolarAngle = Math.PI / 2;
+    controls.maxPolarAngle = Math.PI / 2;
 
     // Window resize handler
     window.addEventListener('resize', onWindowResize, false);
@@ -106,7 +124,8 @@ function onWindowResize() {
 // Animation loop for rendering and updating controls
 function animate() {
     requestAnimationFrame(animate);
-    
+
+    if (turntable) turntable.rotation.z += 0.005; // Spin disc + model around Z
     controls.update();      // Update OrbitControls for damping effect
     renderer.render(scene, camera);
 }
