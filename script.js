@@ -102,15 +102,13 @@ function init() {
     turntable = new THREE.Group();
     scene.add(turntable);
 
-    // Controls setup for panning and rotating around origin
+    // Controls setup — pan and zoom only, no orbit (view stays locked)
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.screenSpacePanning = false;
     controls.target.set(0, 0, 0);
-    // Prevent the camera from going fully vertical (degenerate for two-point perspective)
-    controls.minPolarAngle = 0.1;
-    controls.maxPolarAngle = Math.PI - 0.1;
+    controls.enableRotate = false; // Lock the camera so the grid never rotates
 
     // Window resize handler
     window.addEventListener('resize', onWindowResize, false);
