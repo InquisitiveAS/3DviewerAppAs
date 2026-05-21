@@ -29,11 +29,47 @@
         canvas {
             display: block; /* Remove extra space below canvas */
         }
+
+        /* View cube — fixed preset views (N/S/E/W + ISO) */
+        #viewcube {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: grid;
+            grid-template-columns: 36px 36px 36px;
+            grid-template-rows: 36px 36px 36px;
+            gap: 4px;
+            z-index: 2;
+            user-select: none;
+        }
+        #viewcube button {
+            font: bold 12px Arial, sans-serif;
+            background: rgba(255, 255, 255, 0.85);
+            color: #333;
+            border: 1px solid #888;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #viewcube button:hover { background: rgba(10, 146, 209, 0.85); color: #fff; }
+        #viewcube .nw, #viewcube .ne, #viewcube .sw, #viewcube .se { background: rgba(255, 255, 255, 0.6); }
     </style>
 </head>
 <body>
     <!-- Project Title -->
     <div id="title">3DStructViewerAPP(3DGraphicStatics) : ❤️ by exDAS (Abhishek S) </div>
+
+    <!-- View cube (preset two-point perspective views) -->
+    <div id="viewcube">
+        <button class="nw" data-view="NW">NW</button>
+        <button data-view="N">N</button>
+        <button class="ne" data-view="NE">NE</button>
+        <button data-view="W">W</button>
+        <button data-view="ISO">ISO</button>
+        <button data-view="E">E</button>
+        <button class="sw" data-view="SW">SW</button>
+        <button data-view="S">S</button>
+        <button class="se" data-view="SE">SE</button>
+    </div>
 
     <!-- Import Maps Polyfill -->
     <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>

@@ -56,8 +56,9 @@ function init() {
     scene.background = new THREE.Color(0xf0f0f0);
 
     // Camera setup — Rhino-like 3/4 perspective view of the XY ground plane
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(60, -60, 45);
+    // Wider FOV + gentler height keeps the two-point shear small and natural
+    camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.set(45, -45, 20);
 
     // Renderer setup
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -112,6 +113,36 @@ function init() {
 
     // Window resize handler
     window.addEventListener('resize', onWindowResize, false);
+
+    // View cube buttons — snap camera to preset directions (always two-point perspective)
+    setupViewCube();
+}
+
+// Snap-to-direction view presets. Camera height + radial distance are kept
+// constant so the tilt (and therefore the two-point shear) stays consistent.
+function setupViewCube() {
+    const r = 60;                                     // radial distance in XY
+    const h = 20;                                     // height above ground
+    const d = r / Math.SQRT2;                         // diagonal component
+    const views = {
+        N:   [0,  -r, h],
+        S:   [0,   r, h],
+        E:   [-r,  0, h],
+        W:   [r,   0, h],
+        NE:  [-d, -d, h],
+        NW:  [d,  -d, h],
+        SE:  [-d,  d, h],
+        SW:  [d,   d, h],
+        ISO: [d,  -d, h],
+    };
+    document.querySelectorAll('#viewcube button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const v = views[btn.dataset.view];
+            if (!v) return;
+            controls.target.set(0, 0, 0);
+            camera.position.set(v[0], v[1], v[2]);
+        });
+    });
 }
 
 // Convert Rhino mesh to Three.js geometry
