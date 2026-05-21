@@ -108,6 +108,9 @@ function init() {
     controls.dampingFactor = 0.05;
     controls.screenSpacePanning = false;
     controls.target.set(0, 0, 0);
+    // Prevent the camera from going fully vertical (degenerate for two-point perspective)
+    controls.minPolarAngle = 0.1;
+    controls.maxPolarAngle = Math.PI - 0.1;
 
     // Window resize handler
     window.addEventListener('resize', onWindowResize, false);
@@ -127,12 +130,38 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+// Two-point perspective: force the camera image plane parallel to world Z by
+// looking horizontally, then shear the projection matrix to bring the target
+// back into view. Vertical world lines remain vertical on screen.
+function applyTwoPointPerspective() {
+    const target = controls.target;
+    const dx = camera.position.x - target.x;
+    const dy = camera.position.y - target.y;
+    const horizDistance = Math.sqrt(dx * dx + dy * dy);
+    if (horizDistance < 1e-4) return; // looking straight down — skip
+
+    const heightDiff = camera.position.z - target.z;
+
+    // Look horizontally toward the target with strict world-up
+    camera.up.set(0, 0, 1);
+    camera.lookAt(target.x, target.y, camera.position.z);
+
+    // Apply vertical principal-point shift equal to the would-be tilt angle.
+    // shift in NDC = tan(tilt) / tan(fov/2) = (heightDiff / horizDistance) / tan(fov/2)
+    camera.updateProjectionMatrix();
+    const fovRad = THREE.MathUtils.degToRad(camera.fov);
+    camera.projectionMatrix.elements[9] =
+        (heightDiff / horizDistance) / Math.tan(fovRad / 2);
+    camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+}
+
 // Animation loop for rendering and updating controls
 function animate() {
     requestAnimationFrame(animate);
 
-    if (turntable) turntable.rotation.z += 0.005; // Spin disc + model around Z
+    if (turntable) turntable.rotation.z += 0.005; // Spin geometry around Z
     controls.update();      // Update OrbitControls for damping effect
+    applyTwoPointPerspective();
     renderer.render(scene, camera);
 }
 
