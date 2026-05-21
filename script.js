@@ -126,60 +126,57 @@ function applyView(name) {
     const v = viewPresets[name];
     if (!v) return;
     currentView = name;
-    controls.target.set(0, 0, 0);
     camera.position.set(v[0], v[1], v[2]);
+    // controls.target is set by fitCameraToTurntable to the model's centroid
 }
 
-// Compute the orbit radius needed to keep the turntable in view for ANY
-// rotation (worst case = the farthest point from the rotation axis Z),
-// then derive a camera distance from the FOV and build the preset map.
+// Auto-frame: derive camera distance, target, and height from the model's
+// bounding box so the geometry is centered on screen and the two-point shear
+// stays in a comfortable range no matter how the file was authored.
 function fitCameraToTurntable() {
     if (!turntable || turntable.children.length === 0) return;
 
     const box = new THREE.Box3().setFromObject(turntable);
     if (box.isEmpty()) return;
 
-    // Worst-case radius from the Z rotation axis at origin
-    const corners = [
-        new THREE.Vector3(box.min.x, box.min.y, box.min.z),
-        new THREE.Vector3(box.min.x, box.min.y, box.max.z),
-        new THREE.Vector3(box.min.x, box.max.y, box.min.z),
-        new THREE.Vector3(box.min.x, box.max.y, box.max.z),
-        new THREE.Vector3(box.max.x, box.min.y, box.min.z),
-        new THREE.Vector3(box.max.x, box.min.y, box.max.z),
-        new THREE.Vector3(box.max.x, box.max.y, box.min.z),
-        new THREE.Vector3(box.max.x, box.max.y, box.max.z),
-    ];
-    let radialExtent = 0;          // farthest XY distance from Z axis
-    let topExtent = 0;             // tallest Z value
-    let bottomExtent = 0;          // most-negative Z value
-    for (const c of corners) {
-        radialExtent = Math.max(radialExtent, Math.hypot(c.x, c.y));
-        topExtent = Math.max(topExtent, c.z);
-        bottomExtent = Math.min(bottomExtent, c.z);
+    // Worst-case radial extent from the Z rotation axis (origin in XY)
+    let radialExtent = 0;
+    for (const x of [box.min.x, box.max.x]) {
+        for (const y of [box.min.y, box.max.y]) {
+            radialExtent = Math.max(radialExtent, Math.hypot(x, y));
+        }
     }
-    const halfHeight = Math.max(topExtent, -bottomExtent, radialExtent * 0.25);
+    const center = box.getCenter(new THREE.Vector3());
+    const halfHeight = (box.max.z - box.min.z) / 2;
 
-    // Frame both width (radial) and height (vertical extent) using the camera FOV
+    // Distance needed to frame both the radial sweep and the vertical extent
     const fovV = THREE.MathUtils.degToRad(camera.fov);
     const fovH = 2 * Math.atan(Math.tan(fovV / 2) * camera.aspect);
     const distForHeight = halfHeight / Math.tan(fovV / 2);
     const distForWidth = radialExtent / Math.tan(fovH / 2);
     const distance = Math.max(distForHeight, distForWidth) * 1.6; // margin
 
-    const height = Math.max(halfHeight * 0.6, radialExtent * 0.35); // gentle two-point tilt
-    const d = distance / Math.SQRT2;
+    // Clamp the camera height so the two-point shear stays modest.
+    // shear = heightOffset / distance / tan(fovV/2), so this caps shear at MAX_SHEAR.
+    const MAX_SHEAR = 0.35;
+    const heightOffset = distance * MAX_SHEAR * Math.tan(fovV / 2);
 
+    // Aim at the model's vertical centroid (XY stays on the rotation axis)
+    const targetZ = center.z;
+    controls.target.set(0, 0, targetZ);
+
+    const d = distance / Math.SQRT2;
+    const camZ = targetZ + heightOffset;
     viewPresets = {
-        N:   [0,         -distance, height],
-        S:   [0,          distance, height],
-        E:   [-distance,  0,        height],
-        W:   [distance,   0,        height],
-        NE:  [-d,        -d,        height],
-        NW:  [d,         -d,        height],
-        SE:  [-d,         d,        height],
-        SW:  [d,          d,        height],
-        ISO: [d,         -d,        height * 1.8],
+        N:   [0,         -distance, camZ],
+        S:   [0,          distance, camZ],
+        E:   [-distance,  0,        camZ],
+        W:   [distance,   0,        camZ],
+        NE:  [-d,        -d,        camZ],
+        NW:  [d,         -d,        camZ],
+        SE:  [-d,         d,        camZ],
+        SW:  [d,          d,        camZ],
+        ISO: [d,         -d,        targetZ + heightOffset * 1.4],
     };
 
     // Push the far plane out so the larger orbit distance doesn't clip the model
