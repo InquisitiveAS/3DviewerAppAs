@@ -11,6 +11,8 @@ console.log('Rhino3dm loaded:', rhino);
 
 // Scene setup
 let scene, camera, renderer, controls, turntable;
+let viewPresets = {};
+let currentView = 'ISO';
 const file = './resources/3DGS_polyhedra_rhv8.3dm'; // Make sure this file exists in your server root
 
 // Load and process 3DM file using asynchronous function
@@ -112,32 +114,79 @@ function init() {
     setupViewCube();
 }
 
-// Snap-to-direction view presets. Camera height + radial distance are kept
-// constant so the tilt (and therefore the two-point shear) stays consistent.
+// Wire view-cube clicks. Positions are populated by fitCameraToTurntable()
+// after the model loads so the camera distance matches the geometry size.
 function setupViewCube() {
-    const r = 60;                                     // radial distance in XY
-    const h = 20;                                     // height above ground for cardinal views
-    const d = r / Math.SQRT2;                         // diagonal component
-    const views = {
-        N:   [0,  -r,  h],
-        S:   [0,   r,  h],
-        E:   [-r,  0,  h],
-        W:   [r,   0,  h],
-        NE:  [-d, -d,  h],
-        NW:  [d,  -d,  h],
-        SE:  [-d,  d,  h],
-        SW:  [d,   d,  h],
-        ISO: [d,  -d,  40],                           // higher angle for ISO
-    };
     document.querySelectorAll('#viewcube button').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const v = views[btn.dataset.view];
-            if (!v) return;
-            console.log('View cube → ' + btn.dataset.view, v);
-            controls.target.set(0, 0, 0);
-            camera.position.set(v[0], v[1], v[2]);
-        });
+        btn.addEventListener('click', () => applyView(btn.dataset.view));
     });
+}
+
+function applyView(name) {
+    const v = viewPresets[name];
+    if (!v) return;
+    currentView = name;
+    controls.target.set(0, 0, 0);
+    camera.position.set(v[0], v[1], v[2]);
+}
+
+// Compute the orbit radius needed to keep the turntable in view for ANY
+// rotation (worst case = the farthest point from the rotation axis Z),
+// then derive a camera distance from the FOV and build the preset map.
+function fitCameraToTurntable() {
+    if (!turntable || turntable.children.length === 0) return;
+
+    const box = new THREE.Box3().setFromObject(turntable);
+    if (box.isEmpty()) return;
+
+    // Worst-case radius from the Z rotation axis at origin
+    const corners = [
+        new THREE.Vector3(box.min.x, box.min.y, box.min.z),
+        new THREE.Vector3(box.min.x, box.min.y, box.max.z),
+        new THREE.Vector3(box.min.x, box.max.y, box.min.z),
+        new THREE.Vector3(box.min.x, box.max.y, box.max.z),
+        new THREE.Vector3(box.max.x, box.min.y, box.min.z),
+        new THREE.Vector3(box.max.x, box.min.y, box.max.z),
+        new THREE.Vector3(box.max.x, box.max.y, box.min.z),
+        new THREE.Vector3(box.max.x, box.max.y, box.max.z),
+    ];
+    let radialExtent = 0;          // farthest XY distance from Z axis
+    let topExtent = 0;             // tallest Z value
+    let bottomExtent = 0;          // most-negative Z value
+    for (const c of corners) {
+        radialExtent = Math.max(radialExtent, Math.hypot(c.x, c.y));
+        topExtent = Math.max(topExtent, c.z);
+        bottomExtent = Math.min(bottomExtent, c.z);
+    }
+    const halfHeight = Math.max(topExtent, -bottomExtent, radialExtent * 0.25);
+
+    // Frame both width (radial) and height (vertical extent) using the camera FOV
+    const fovV = THREE.MathUtils.degToRad(camera.fov);
+    const fovH = 2 * Math.atan(Math.tan(fovV / 2) * camera.aspect);
+    const distForHeight = halfHeight / Math.tan(fovV / 2);
+    const distForWidth = radialExtent / Math.tan(fovH / 2);
+    const distance = Math.max(distForHeight, distForWidth) * 1.6; // margin
+
+    const height = Math.max(halfHeight * 0.6, radialExtent * 0.35); // gentle two-point tilt
+    const d = distance / Math.SQRT2;
+
+    viewPresets = {
+        N:   [0,         -distance, height],
+        S:   [0,          distance, height],
+        E:   [-distance,  0,        height],
+        W:   [distance,   0,        height],
+        NE:  [-d,        -d,        height],
+        NW:  [d,         -d,        height],
+        SE:  [-d,         d,        height],
+        SW:  [d,          d,        height],
+        ISO: [d,         -d,        height * 1.8],
+    };
+
+    // Push the far plane out so the larger orbit distance doesn't clip the model
+    camera.far = Math.max(camera.far, distance * 4);
+    camera.updateProjectionMatrix();
+
+    applyView(currentView);
 }
 
 // Convert Rhino mesh to Three.js geometry
@@ -152,6 +201,7 @@ function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    fitCameraToTurntable(); // re-frame so the model still fits at the new aspect
 }
 
 // Two-point perspective: force the camera image plane parallel to world Z by
@@ -192,5 +242,6 @@ function animate() {
 // Initialize and start application
 init();
 loadModel().then(() => {
+    fitCameraToTurntable();
     animate();
 });
