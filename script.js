@@ -55,9 +55,9 @@ function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
 
-    // Camera setup — positioned at model height so the view is horizontal (two-point perspective)
+    // Camera setup — Rhino-like 3/4 perspective view of the XY ground plane
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(60, 60, 10);
+    camera.position.set(60, -60, 45);
 
     // Renderer setup
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -75,33 +75,39 @@ function init() {
     // Add grid helper to visualize origin and reference grid
     const size = 100;       // Size of the grid (width and height)
     const divisions = 100;  // Number of divisions in the grid
-    const gridHelper = new THREE.GridHelper(size, divisions);
+    const gridHelper = new THREE.GridHelper(size, divisions, 0x888888, 0xcccccc);
     gridHelper.rotation.x = Math.PI / 2; // Lay grid flat in XY plane to match Z-up
     scene.add(gridHelper);
 
-    // Turntable group at origin — the disc + model rotate around Z together
+    // Colored world axes on the ground plane (red = X, green = Y) like Rhino
+    const axisLength = size / 2;
+    const xAxis = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(axisLength, 0, 0)
+        ]),
+        new THREE.LineBasicMaterial({ color: 0xcc0000 })
+    );
+    const yAxis = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, axisLength, 0)
+        ]),
+        new THREE.LineBasicMaterial({ color: 0x00aa00 })
+    );
+    scene.add(xAxis);
+    scene.add(yAxis);
+
+    // Turntable group at origin — only the loaded geometry spins, no visible disc
     turntable = new THREE.Group();
     scene.add(turntable);
 
-    // Rotating disc at 0,0,0
-    const discGeometry = new THREE.CylinderGeometry(15, 15, 0.3, 64);
-    const discMaterial = new THREE.MeshPhongMaterial({
-        color: 0x444444,
-        specular: 0x222222,
-        shininess: 60
-    });
-    const disc = new THREE.Mesh(discGeometry, discMaterial);
-    disc.rotation.x = Math.PI / 2; // Lay the disc flat in XY plane (Z-up)
-    turntable.add(disc);
-
-    // Controls setup — lock polar angle so vertical lines stay vertical (two-point perspective)
+    // Controls setup for panning and rotating around origin
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.screenSpacePanning = false;
     controls.target.set(0, 0, 0);
-    controls.minPolarAngle = Math.PI / 2;
-    controls.maxPolarAngle = Math.PI / 2;
 
     // Window resize handler
     window.addEventListener('resize', onWindowResize, false);
